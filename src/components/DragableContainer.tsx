@@ -1,8 +1,9 @@
 // prettier-ignore
-import { makeStyles } from '@material-ui/core';
 import * as React from "react";
 import { animated, useSpring } from "react-spring";
 import { useDrag } from "react-use-gesture";
+import styles from './styles/dragableContainer.module.scss';
+
 interface Props {
   children: React.ReactNode;
   on: boolean;
@@ -38,8 +39,6 @@ export function DragableContainer(props: Props) {
       config: { tension: 400, friction: 7, precision: 0.1 },
       cursor: "pointer",
     }));
-
-    const classes = useStyles(props);
 
     React.useEffect(() => {
       if ((open && bounceOnOpen) || (!open && bounceOnClose)) {
@@ -90,10 +89,10 @@ export function DragableContainer(props: Props) {
     });
 
     return (
-      <div className={classes.root}>
+      <div className={styles.root}>
         <animated.div
+          className={styles.dragable}
           {...bind()}
-          className={classes.dragable}
           style={{ cursor: cursor, left: x, top: y }}
         >
           {children}
@@ -104,14 +103,3 @@ export function DragableContainer(props: Props) {
     return <>{children}</>;
   }
 }
-
-const useStyles = makeStyles({
-  root: {
-    top: 0,
-    left: 0,
-  },
-
-  dragable: {
-    position: "absolute",
-  },
-});

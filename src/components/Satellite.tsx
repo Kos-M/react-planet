@@ -1,5 +1,4 @@
 // prettier-ignore
-import { makeStyles } from '@material-ui/core';
 import * as React from "react";
 import { animated, useSpring } from "react-spring";
 import useResizeObserver from "use-resize-observer";
@@ -39,7 +38,7 @@ export function Satellite(props: Props) {
     dragRadius,
     orientation,
   } = props;
-  const classes = useStyles(props);
+  // const classes = useStyles(props);
   const { ref, height = 0, width = 0 } = useResizeObserver();
   const position = useSpring({
     reverse: !open,
@@ -59,7 +58,11 @@ export function Satellite(props: Props) {
   });
 
   return (
-    <animated.div className={classes.root} style={position}>
+    <animated.div style={{
+      position: "absolute",
+      zIndex: props.open ? 2 : 0,
+      ...position
+    }}>
       <DragableContainer
         on={dragable}
         dragRadius={dragRadius}
@@ -149,13 +152,6 @@ function getFinalDeltaPositions(
     angle: TARGET_ANGLE,
   };
 }
-
-const useStyles = makeStyles({
-  root: (props: Props) => ({
-    position: "absolute",
-    zIndex: props.open ? 2 : 0,
-  }),
-});
 
 // UTILITY FUNCTIONS
 const DEG_TO_RAD = 0.0174533;

@@ -18,7 +18,10 @@
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 		"esModuleInterop": true,
-		"skipLibCheck": true
+		"skipLibCheck": true,
+		"plugins": [
+			{ "name": "typescript-plugin-css-modules" }
+		]
 	},
 	"include": ["src"],
 	"exclude": ["node_modules", "build", "dist", "example", "rollup.config.js", "src/stories/*"]

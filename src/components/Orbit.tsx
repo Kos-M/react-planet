@@ -1,11 +1,13 @@
 // prettier-ignore
-import { makeStyles } from '@material-ui/core';
-import { CreateCSSProperties, CSSProperties } from '@material-ui/styles';
+// import { makeStyles } from '@material-ui/core';
+// import { CreateCSSProperties, CSSProperties } from '@material-ui/styles';
 import * as React from 'react';
 import { animated, useSpring } from 'react-spring';
+import cx from 'classnames';
+import styles from './styles/orbit.module.scss';
 
 interface Props {
-	orbitStyle?: (defaultStyle: CSSProperties | CreateCSSProperties<{}>) => CSSProperties | CreateCSSProperties<{}>;
+	orbitClassname?: string;
 	orbitRadius: number;
 	planetWidth: number;
 	planetHeight: number;
@@ -16,8 +18,8 @@ interface Props {
 }
 
 export function Orbit(props: Props) {
-	const { orbitRadius, planetWidth, planetHeight, open, tension, friction, mass } = props;
-	const classes = useStyles(props);
+	const { orbitClassname, planetWidth, planetHeight, open, tension, friction, mass, orbitRadius } = props;
+	// const classes = useStyles(props);
 	const position = useSpring({
 		reverse: !open,
 		from: getInitalOrbitPosition(planetWidth, planetHeight),
@@ -25,7 +27,7 @@ export function Orbit(props: Props) {
 		config: { mass, tension, friction },
 	});
 
-	return <animated.div className={classes.orbit} style={position} />;
+	return <animated.div className={cx(styles.orbit, orbitClassname)} style={position} />;
 }
 
 function getInitalOrbitPosition(planetWidth: number, planetHeight: number) {
@@ -48,16 +50,16 @@ function getFinalOrbitPosition(planetWidth: number, planetHeight: number, orbitR
 	};
 }
 
-const orbitDefaultStyle: CSSProperties | CreateCSSProperties<{}> = {
-	position: 'absolute',
-	borderRadius: '100%',
-	borderWidth: 2,
-	borderStyle: 'dotted',
-	borderColor: 'lightgrey',
-	zIndex: 0,
-};
+// const orbitDefaultStyle: CSSProperties | CreateCSSProperties<{}> = {
+// 	position: 'absolute',
+// 	borderRadius: '100%',
+// 	borderWidth: 2,
+// 	borderStyle: 'dotted',
+// 	borderColor: 'lightgrey',
+// 	zIndex: 0,
+// };
 
-const useStyles = makeStyles({
-	orbit: (props: Props) =>
-		props.orbitStyle ? (props.orbitStyle(orbitDefaultStyle) as any) : (orbitDefaultStyle as any),
-});
+// const useStyles = makeStyles({
+// 	orbit: (props: Props) =>
+// 		props.orbitStyle ? (props.orbitStyle(orbitDefaultStyle) as any) : (orbitDefaultStyle as any),
+// });

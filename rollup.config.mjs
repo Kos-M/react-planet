@@ -1,9 +1,10 @@
 import commonjs from 'rollup-plugin-commonjs';
-import resolve from 'rollup-plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
 import external from 'rollup-plugin-peer-deps-external';
 import typescript from 'rollup-plugin-typescript2';
-import pkg from './package.json';
-
+import pkg from './package.json' assert { type: "json" };
+import autoprefixer from 'autoprefixer';
+import postcss from 'rollup-plugin-postcss';
 export default {
 	input: 'src/index.ts',
 	output: [
@@ -28,10 +29,18 @@ export default {
 			exclude: ['**/__tests__/**', '**/*.stories.tsx'],
 			clean: true,
 		}),
+		postcss({
+			plugins: [autoprefixer()],
+			modules: true,
+			extensions: ['.scss', '.css', '.sss', '.pcss'],
+			// sourceMap: true,
+			// extract: true,
+			// minimize: true
+		}),
 		commonjs({
 			include: [/node_modules/],
 			namedExports: {
-				'node_modules/react/react.js': ['Children', 'Component', 'PropTypes', 'createElement'],
+				'node_modules/react/react.js': ['Children', 'Component', 'PropTypes', 'createElement', 'ForwardRef'],
 				'node_modules/react-dom/index.js': ['render'],
 				'prop-types': [
 					'array',
@@ -53,14 +62,27 @@ export default {
 					'shape',
 					'exact',
 				],
+				'node_modules/@mui/utils/node_modules/react-is/index.js': [
+					'ForwardRef',
+					'isElement',
+					'isValidElementType',
+					'Memo',
+					'isFragment',
+				],
+				'node_modules/@mui/base/node_modules/react-is/index.js': [
+					'isFragment',
+				],
 				'node_modules/react-is/index.js': [
 					'isElement',
 					'isValidElementType',
-					'ForwardRef',
 					'Memo',
 					'isFragment',
 				],
 			},
 		}),
 	],
+	external: [
+		...Object.keys(pkg.dependencies || {})
+	]
+	// external: ['react', 'react-dom', 'classnames', '/@babel/runtime/']
 };

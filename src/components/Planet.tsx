@@ -1,12 +1,12 @@
 // prettier-ignore
-import { ClickAwayListener, makeStyles } from '@material-ui/core';
-import { CreateCSSProperties, CSSProperties } from "@material-ui/styles";
+import { ClickAwayListener } from '@mui/base';
 import * as React from "react";
 import { ReactElement } from "react";
 import useResizeObserver from "use-resize-observer";
 import { DragableContainer } from "./DragableContainer";
 import { Orbit } from "./Orbit";
 import { Satellite } from "./Satellite";
+import styles from './styles/planet.module.scss';
 
 const DEFAULT_MASS = 1;
 const DEFAULT_TENSTION = 500;
@@ -22,9 +22,7 @@ interface Props {
   mass?: number;
   tension?: number;
   friction?: number;
-  orbitStyle?: (
-    defaultStyle: CSSProperties | CreateCSSProperties<{}>
-  ) => CSSProperties | CreateCSSProperties<{}>;
+  orbitClassname?: string;
   orbitRadius?: number;
   rotation?: number;
   hideOrbit?: boolean;
@@ -55,7 +53,7 @@ export function Planet(props: Props) {
     friction,
     orbitRadius,
     rotation,
-    orbitStyle,
+    orbitClassname,
     hideOrbit,
     onClose,
     autoClose,
@@ -70,7 +68,18 @@ export function Planet(props: Props) {
     bounceDirection,
     satelliteOrientation,
   } = props;
-  const classes = useStyles(props);
+
+  // const useStyles = makeStyles({
+  //   root: {
+  //     position: "relative",
+  //   },
+  //
+  //   planetContent: {
+  //     position: "absolute",
+  //     zIndex: 1,
+  //   },
+  // });
+  // const ref = React.useRef();
   const { ref, height = 0, width = 0 } = useResizeObserver();
   const [_open, setOpen] = React.useState(!!open);
 
@@ -129,12 +138,12 @@ export function Planet(props: Props) {
   };
 
   return (
-    <ClickAwayListener onClickAway={onClickAway}>
-      <div className={classes.root}>
+    <ClickAwayListener onClickAway={onClickAway as unknown as (event: MouseEvent | TouchEvent) => void}>
+      <div className={styles.root}>
         {!hideOrbit && (
           <Orbit
             open={_open}
-            orbitStyle={orbitStyle}
+            orbitClassname={orbitClassname}
             planetHeight={height}
             planetWidth={width}
             mass={mass ? mass : DEFAULT_MASS}
@@ -144,7 +153,7 @@ export function Planet(props: Props) {
           />
         )}
         <>{satellites}</>
-        <div className={classes.planetContent} onClick={onPlanet}>
+        <div className={styles.planetContent} onClick={onPlanet}>
           <DragableContainer
             on={
               !!dragablePlanet || !!bounce || !!bounceOnOpen || !!bounceOnClose
@@ -165,13 +174,13 @@ export function Planet(props: Props) {
   );
 }
 
-const useStyles = makeStyles({
-  root: {
-    position: "relative",
-  },
-
-  planetContent: {
-    position: "absolute",
-    zIndex: 1,
-  },
-});
+// const useStyles = makeStyles({
+//   root: {
+//     position: "relative",
+//   },
+//
+//   planetContent: {
+//     position: "absolute",
+//     zIndex: 1,
+//   },
+// });
