@@ -3,6 +3,7 @@ import * as React from "react";
 import { animated, useSpring } from "react-spring";
 import useResizeObserver from "use-resize-observer";
 import { DragableContainer } from "./DragableContainer";
+import styles from "./styles/satellite.module.scss";
 
 interface Props {
   index: number;
@@ -19,6 +20,11 @@ interface Props {
   dragable: boolean;
   dragRadius?: number;
   orientation?: "DEFAULT" | "INSIDE" | "OUTSIDE" | "READABLE";
+  satelliteClassname?: string;
+  linkLineClassname?: string;
+  showLinks?: boolean;
+  orbitIndex?: number;
+
 }
 
 export function Satellite(props: Props) {
@@ -37,6 +43,10 @@ export function Satellite(props: Props) {
     dragable,
     dragRadius,
     orientation,
+    satelliteClassname,
+    linkLineClassname,
+    showLinks,
+    orbitIndex,
   } = props;
   // const classes = useStyles(props);
   const { ref, height = 0, width = 0 } = useResizeObserver();
@@ -52,22 +62,33 @@ export function Satellite(props: Props) {
       planetHeight,
       orbitRadius,
       rotation,
-      orientation
+      orientation,
     ),
     config: { mass, tension, friction },
   });
-
+// transform: rotate(-30deg);
+  const { angle } = getFinalDeltaPositions(index, satelliteCount, width, height, orbitRadius, rotation);
+  const linkLine = (
+    <div style={{transformOrigin: `-${width / 2}px 0`, transform: `rotate(${angle-90}deg)`}} className={styles.linkWrapper}>
+          <svg width={orbitRadius - (width / 2) - (planetWidth / 2)} height={1} className={styles.links}>
+            <line className={linkLineClassname} x1='0%' y1="0" x2="95%" y2="0" stroke="black"></line>
+          </svg>
+        </div>
+  );
   return (
     <animated.div style={{
       position: "absolute",
-      zIndex: props.open ? 2 : 0,
+      zIndex: props.open ? (100-(orbitIndex || 0)) : 0,
       ...position
-    }}>
+    }}
+    className={satelliteClassname}>
+
       <DragableContainer
         on={dragable}
         dragRadius={dragRadius}
         dragable={dragable}
       >
+        {showLinks && linkLine}
         <div ref={ref as any}>{children}</div>
       </DragableContainer>
     </animated.div>

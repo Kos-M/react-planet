@@ -1,0 +1,18 @@
+.linkWrapper {
+  position: absolute;
+    width: fit-content;
+    height: 1px;
+    top: 50%;
+    left: 100%;
+    display: flex;
+}
+.links {
+  position: unset;
+  overflow: visible;
+}
+.link {
+  position: absolute;
+  top: 50%;
+  //left: -110px;
+  //  transform: rotate(-36deg);
+}

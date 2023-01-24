@@ -13,6 +13,7 @@ const DEFAULT_TENSTION = 500;
 const DEFAULT_FRICTION = 17;
 const DEFAULT_ROTATION = 0;
 const DEFAULT_RADIUS = 100;
+const DEFAULT_ORBIT_SEPARATION = 50;
 
 interface Props {
   centerContent?: React.ReactNode;
@@ -40,6 +41,15 @@ interface Props {
   bounceOnClose?: boolean;
   bounceDirection?: "TOP" | "BOTTOM" | "LEFT" | "RIGHT";
   satelliteOrientation?: "DEFAULT" | "INSIDE" | "OUTSIDE" | "READABLE";
+  perOrbitSatellites?: number;
+  maxFirstOrbitSatellites?: number;
+  orbitSeparation?: number;
+  makeSpace?: boolean;
+  satelliteClassname?: string;
+  linkLineClassname?: string;
+  showLinks?: boolean;
+  minOrbitSeparation?: number;
+  orbitSeparationCoeff?: number;
 }
 
 export function Planet(props: Props) {
@@ -67,6 +77,15 @@ export function Planet(props: Props) {
     bounceOnClose,
     bounceDirection,
     satelliteOrientation,
+    maxFirstOrbitSatellites,
+    perOrbitSatellites,
+    orbitSeparation,
+    makeSpace,
+    satelliteClassname,
+    linkLineClassname,
+    showLinks,
+    minOrbitSeparation,
+    orbitSeparationCoeff
   } = props;
 
   // const useStyles = makeStyles({
@@ -86,31 +105,99 @@ export function Planet(props: Props) {
   React.useEffect(() => {
     setOpen(!!open);
   }, [open]);
+  const orbits: ReactElement<any>[] = [];
+  let satellites: ReactElement<any>[] = [];
+  let satelliteCount = React.Children.count(children);
 
-  var satellites: ReactElement<any>[] = [];
-  var satelliteCount = React.Children.count(children);
+
+  let orbitIndex = 0;
+  let currentOrbitCount = perOrbitSatellites ? Math.min(perOrbitSatellites, satelliteCount) : (maxFirstOrbitSatellites ? Math.min(maxFirstOrbitSatellites, satelliteCount) : satelliteCount);
+  let prevOrbitCount = 0;
+  let currentOrbitRadius = orbitRadius || DEFAULT_RADIUS;
+  let currentRotation = rotation || DEFAULT_ROTATION;
+
+
+  const INITIAL_SEPARATION_ANGLE = 2*Math.PI / currentOrbitCount;
+  const SEPARATION_DIST = currentOrbitRadius*INITIAL_SEPARATION_ANGLE
+
+
   React.Children.forEach(children, (c, i) => {
-    satellites[i] = (
+    if (currentOrbitCount) {
+      if (i >= prevOrbitCount + currentOrbitCount) {
+        orbits.push(
+            <div>
+              {!hideOrbit && (
+                  <Orbit
+                      open={_open}
+                      orbitClassname={orbitClassname}
+                      planetHeight={height}
+                      planetWidth={width}
+                      mass={mass ? mass : DEFAULT_MASS}
+                      friction={friction ? friction : DEFAULT_FRICTION}
+                      tension={tension ? tension : DEFAULT_TENSTION}
+                      orbitRadius={currentOrbitRadius}
+                  />
+              )}
+              {satellites}
+            </div>
+        );
+        orbitIndex += 1;
+        satellites = [];
+        prevOrbitCount += currentOrbitCount
+        const minSeparation = minOrbitSeparation ?
+          Math.max(minOrbitSeparation, ((orbitSeparation || DEFAULT_ORBIT_SEPARATION) / (2+((orbitSeparationCoeff || 0.8)*orbitIndex)))) :
+          (orbitSeparation || DEFAULT_ORBIT_SEPARATION) / 2;
+        currentOrbitRadius += minSeparation;
+
+        const circ = 2*Math.PI*currentOrbitRadius;
+        currentOrbitCount = perOrbitSatellites ? perOrbitSatellites : Math.min((satelliteCount - prevOrbitCount), Math.floor(circ / SEPARATION_DIST));
+        currentRotation = currentRotation + (180 / currentOrbitCount);
+      }
+    }
+
+    satellites.push(
       <Satellite
-        key={i}
-        index={i}
+        key={`${orbitIndex}_${i}`}
+        index={(i-prevOrbitCount)}
         open={_open}
-        satelliteCount={satelliteCount}
+        satelliteCount={currentOrbitCount}
         planetHeight={height}
         planetWidth={width}
         mass={mass ? mass : DEFAULT_MASS}
         friction={friction ? friction : DEFAULT_FRICTION}
         tension={tension ? tension : DEFAULT_TENSTION}
-        orbitRadius={orbitRadius ? orbitRadius : DEFAULT_RADIUS}
-        rotation={rotation ? rotation : DEFAULT_ROTATION}
+        orbitRadius={currentOrbitRadius}
+        rotation={currentRotation}
         dragable={!!dragableSatellites}
         dragRadius={dragRadiusSatellites}
         orientation={satelliteOrientation}
+        satelliteClassname={satelliteClassname}
+        linkLineClassname={linkLineClassname}
+        showLinks={showLinks}
+        orbitIndex={orbitIndex}
       >
         {c}
       </Satellite>
     );
   });
+
+  orbits.push(
+      <div>
+        {!hideOrbit && (
+            <Orbit
+                open={_open}
+                orbitClassname={orbitClassname}
+                planetHeight={height}
+                planetWidth={width}
+                mass={mass ? mass : DEFAULT_MASS}
+                friction={friction ? friction : DEFAULT_FRICTION}
+                tension={tension ? tension : DEFAULT_TENSTION}
+                orbitRadius={currentOrbitRadius}
+            />
+        )}
+        {satellites}
+      </div>
+  );
 
   const onPlanet = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (onClick) {
@@ -139,20 +226,18 @@ export function Planet(props: Props) {
 
   return (
     <ClickAwayListener onClickAway={onClickAway as unknown as (event: MouseEvent | TouchEvent) => void}>
-      <div className={styles.root}>
-        {!hideOrbit && (
-          <Orbit
-            open={_open}
-            orbitClassname={orbitClassname}
-            planetHeight={height}
-            planetWidth={width}
-            mass={mass ? mass : DEFAULT_MASS}
-            friction={friction ? friction : DEFAULT_FRICTION}
-            tension={tension ? tension : DEFAULT_TENSTION}
-            orbitRadius={orbitRadius ? orbitRadius : DEFAULT_RADIUS}
-          />
-        )}
-        <>{satellites}</>
+      <div style={{
+        ...(makeSpace && {width: `${currentOrbitRadius*2}px`, height: `${currentOrbitRadius*2}px`})
+      }} className={styles.root}>
+        {/*<div className={styles.linkWrapper}>*/}
+        {/*<svg width={2*currentOrbitRadius} height={1} className={styles.links}>*/}
+        {/*  <line x1={currentOrbitRadius} y1={currentOrbitRadius} x2="350" y2="350" stroke="black"></line>*/}
+        {/*</svg>*/}
+        {/*  </div>*/}
+        <div style={{
+          ...(makeSpace && {transform: `translate(${currentOrbitRadius - (width/2)}px, ${currentOrbitRadius - (height/2)}px)`})
+        }}>
+        {orbits}
         <div className={styles.planetContent} onClick={onPlanet}>
           <DragableContainer
             on={
@@ -169,6 +254,7 @@ export function Planet(props: Props) {
             <div ref={ref as any}>{centerContent}</div>
           </DragableContainer>
         </div>
+          </div>
       </div>
     </ClickAwayListener>
   );
