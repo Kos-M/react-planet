@@ -2,7 +2,7 @@ import commonjs from 'rollup-plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import external from 'rollup-plugin-peer-deps-external';
 import typescript from 'rollup-plugin-typescript2';
-import pkg from './package.json' assert { type: "json" };
+import pkg from './package.json' with { type: "json" };
 import autoprefixer from 'autoprefixer';
 import postcss from 'rollup-plugin-postcss';
 export default {
